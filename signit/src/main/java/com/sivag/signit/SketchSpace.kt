@@ -42,7 +42,7 @@ class SketchSpace @JvmOverloads constructor(context: Context?, attrs: AttributeS
 
     fun init(height: Int, width: Int) {
         mBitmap = Bitmap.createBitmap(width, height, Bitmap.Config.ARGB_8888)
-        mCanvas = Canvas(mBitmap!!)
+        mBitmap.let { mCanvas = it?.let { it1 -> Canvas(it1) } }
 
         currentColor = Color.BLACK
         strokeWidth = 5
@@ -81,22 +81,26 @@ class SketchSpace @JvmOverloads constructor(context: Context?, attrs: AttributeS
     override fun onDraw(canvas: Canvas) {
         canvas.save()
         val backgroundColor = Color.WHITE
-        mCanvas!!.drawColor(backgroundColor)
+        mCanvas?.drawColor(backgroundColor)
 
         for (fp in paths) {
             mPaint.color = fp.color
             mPaint.strokeWidth = fp.strokeWidth.toFloat()
-            mCanvas!!.drawPath(fp.path, mPaint)
+            mCanvas?.drawPath(fp.path, mPaint)
         }
-        canvas.drawBitmap(mBitmap!!, 0f, 0f, mBitmapPaint)
+        mBitmap.let {
+            if (it != null) {
+                canvas.drawBitmap(it, 0f, 0f, mBitmapPaint)
+            }
+        }
         canvas.restore()
     }
     private fun touchStart(x: Float, y: Float) {
         mPath = Path()
         val fp = Stroke(currentColor, strokeWidth, mPath!!)
         paths.add(fp)
-        mPath!!.reset()
-        mPath!!.moveTo(x, y)
+        mPath?.reset()
+        mPath?.moveTo(x, y)
         mX = x
         mY = y
     }
@@ -105,7 +109,7 @@ class SketchSpace @JvmOverloads constructor(context: Context?, attrs: AttributeS
         val dx = abs(x - mX)
         val dy = abs(y - mY)
         if (dx >= TOUCH_TOLERANCE || dy >= TOUCH_TOLERANCE) {
-            mPath!!.quadTo(mX, mY, (x + mX) / 2, (y + mY) / 2)
+            mPath?.quadTo(mX, mY, (x + mX) / 2, (y + mY) / 2)
             mX = x
             mY = y
         }
